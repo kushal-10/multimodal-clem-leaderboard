@@ -1,8 +1,8 @@
 ---
 title: Clembench
-emoji: 🏢
+emoji: 🏆
 colorFrom: yellow
-colorTo: blue
+colorTo: green
 sdk: gradio
 sdk_version: 4.3.0
 app_file: app.py
