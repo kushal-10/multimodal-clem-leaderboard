@@ -28,7 +28,7 @@ with demo:
     gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
     with gr.Tabs(elem_classes="tab-buttons") as tabs:
-        with gr.TabItem("🥇 Clem Leaderboard", elem_id="llm-benchmark-tab-table", id=0):
+        with gr.TabItem("🥇 CLEM Leaderboard", elem_id="llm-benchmark-tab-table", id=0):
             with gr.Row():
                 search_bar = gr.Textbox(
                     placeholder=" 🔍 Search for models - separate multiple queries with `;` and press ENTER...",
