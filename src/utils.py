@@ -18,7 +18,7 @@ def update_cols(df: pd.DataFrame) -> pd.DataFrame:
     default_cols = list(df.columns)
 
     # First 4 columns are initalised in 'update', Append additional columns for games Model, Clemscore, ALL(PLayed) and ALL(Main Score)
-    update = ['Model', 'Clemscore', 'All(Played)', 'All(Quality Score)']
+    update = ['Model', 'Clemscore', 'Played', 'Quality Score']
     game_metrics = default_cols[4:]
 
     # Change columns Names for each Game
