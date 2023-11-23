@@ -140,17 +140,17 @@ def compare_plots(df: pd.DataFrame, LIST: list):
     X = df[list_columns[2]]
     fig, ax = plt.subplots()
     for model in LIST:
-        short = short_names[model][0]
-        same_flag = short_names[model][1]
+        short = short_names[model]
+        # same_flag = short_names[model][1]
         model_df = df[df[list_columns[0]] == model]
         x = model_df[list_columns[2]]
         y = model_df[list_columns[3]]
         color = plt.cm.rainbow(x / max(X))  # Use a colormap for different colors
         plt.scatter(x, y, color=color)
-        if same_flag:
-            plt.annotate(f'{short}', (x, y), textcoords="offset points", xytext=(0, -15), ha='center', rotation=0)
-        else:
-            plt.annotate(f'{short}', (x, y), textcoords="offset points", xytext=(20, -3), ha='center', rotation=0)
+        # if same_flag:
+        plt.annotate(f'{short}', (x, y), textcoords="offset points", xytext=(0, -15), ha='center', rotation=0)
+        # else:
+        #     plt.annotate(f'{short}', (x, y), textcoords="offset points", xytext=(20, -3), ha='center', rotation=0)
     ax.grid(which='both', color='grey', linewidth=1, linestyle='-', alpha=0.2)
     ax.set_xticks(np.arange(0,110,10))
     plt.xlim(-10, 110)
@@ -162,6 +162,23 @@ def compare_plots(df: pd.DataFrame, LIST: list):
 
     return fig
 
+def shorten_model_name(full_name):
+    # Split the name into parts
+    parts = full_name.split('-')
+
+    # Process the name parts to keep only the parts with digits (model sizes and versions)
+    short_name_parts = [part for part in parts if any(char.isdigit() for char in part)]
+
+    if len(parts) == 1:
+        short_name = ''.join(full_name[0:min(3, len(full_name))])
+    else:
+        # Join the parts to form the short name
+        short_name = '-'.join(short_name_parts)
+
+        # Remove any leading or trailing hyphens
+        short_name = full_name[0] + '-'+ short_name.strip('-')
+
+    return short_name
 
 def label_map(model_list: list) -> dict:
     '''
@@ -172,20 +189,24 @@ def label_map(model_list: list) -> dict:
     Returns:
         short_name: A map from long to list of short name + indication if models are same or different
     '''
-    short_name = {}
+    short_names = {}
     for model_name in model_list:
-        splits = model_name.split('--')
-        if len(splits) != 1:
-            splits[0] = SHORT_NAMES[splits[0] + '-']
-            splits[1] = SHORT_NAMES[splits[1] + '-']
-            # Define the short name and indicate there are two different models
-            short_name[model_name] = [splits[0] + '--' + splits[1], 0]
+        # splits = model_name.split('--')
+        # if len(splits) != 1:
+        #     splits[0] = SHORT_NAMES[splits[0] + '-']
+        #     splits[1] = SHORT_NAMES[splits[1] + '-']
+        #     # Define the short name and indicate there are two different models
+        #     short_names[model_name] = [splits[0] + '--' + splits[1], 0]
+        # else:
+        if model_name in SHORT_NAMES:
+            short_name = SHORT_NAMES[model_name]
         else:
-            splits[0] = SHORT_NAMES[splits[0] + '-']
-            # Define the short name and indicate both models are same 
-            short_name[model_name] = [splits[0], 1]
+            short_name = shorten_model_name(model_name)
 
-    return short_name
+        # Define the short name and indicate both models are same
+        short_names[model_name] = short_name
+
+    return short_names
 
 def filter_search(df: pd.DataFrame, query: str) -> pd.DataFrame:
     '''
