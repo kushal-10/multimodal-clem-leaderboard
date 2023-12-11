@@ -1,29 +1,31 @@
 import gradio as gr
 
 from src.assets.text_content import TITLE, INTRODUCTION_TEXT
-from src.utils import get_data, compare_plots, filter_search
+from src.leaderboard_utils import filter_search, get_github_data
+from src.plot_utils import split_models, compare_plots
 
-############################ For Leaderboards #############################
-DATA_PATH = 'versions'
-latest_flag = True #Set flag to iclude latest data in Details and Versions Tab
-latest_df, latest_vname, previous_df, previous_vname = get_data(DATA_PATH, latest_flag)
+# For Leaderboards
+# Get CSV data
+global primary_leaderboard_df, version_dfs, version_names
+primary_leaderboard_df, version_dfs, version_names = get_github_data()
 
 global prev_df
-prev_df = previous_df[0]
+prev_df = version_dfs[0]
 def select_prev_df(name):
-    ind = previous_vname.index(name)
-    prev_df = previous_df[ind]
+    ind = version_names.index(name)
+    prev_df = version_dfs[ind]
     return prev_df
 
-############################ For Plots ####################################
-global plot_df, MODEL_COLS
-plot_df = latest_df[0]
-MODEL_COLS = list(plot_df['Model'].unique())
+# For Plots 
+global plot_df, OPEN_MODELS, CLOSED_MODELS, SHOW_ALL, SHOW_NAMES
+plot_df = primary_leaderboard_df[0]
+MODELS = list(plot_df[list(plot_df.columns)[0]].unique())
+OPEN_MODELS, CLOSED_MODELS = split_models(MODELS)
 
 
-############# MAIN APPLICATION ######################
-demo = gr.Blocks()
-with demo:
+# MAIN APPLICATION s
+main_app = gr.Blocks()
+with main_app:
     gr.HTML(TITLE)
     gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
@@ -35,17 +37,17 @@ with demo:
                     show_label=False,
                     elem_id="search-bar",
                 )
-                        
+                                    
             leaderboard_table = gr.components.Dataframe(
-                value=latest_df[0],
+                value=primary_leaderboard_df[0],
                 elem_id="leaderboard-table",
                 interactive=False,
                 visible=True,
             )
 
-            # Add a dummy leaderboard to handle search queries from the latest_df and not update latest_df
+            # Add a dummy leaderboard to handle search queries from the primary_leaderboard_df and not update primary_leaderboard_df
             dummy_leaderboard_table = gr.components.Dataframe(
-                value=latest_df[0],
+                value=primary_leaderboard_df[0],
                 elem_id="leaderboard-table",
                 interactive=False,
                 visible=False,
@@ -57,36 +59,88 @@ with demo:
                 leaderboard_table,
                 queue=True
             )
+
         with gr.TabItem("📈 Plot", id=3):
             with gr.Row():
-                model_cols = gr.CheckboxGroup(
-                    MODEL_COLS, 
-                    label="Select Models 🤖", 
+                open_models_selection = gr.CheckboxGroup(
+                    OPEN_MODELS, 
+                    label="Open-weight Models 🌐",
                     value=[],
-                    elem_id="column-select",
+                    elem_id="value-select",
                     interactive=True,
                 )
 
             with gr.Row():
-                plot_grdf = gr.DataFrame(
+                closed_models_selection = gr.CheckboxGroup(
+                    CLOSED_MODELS, 
+                    label="Closed-weight Models 💼",
+                    value=[],
+                    elem_id="value-select-2",
+                    interactive=True,
+                )
+            
+            with gr.Row():
+                with gr.Column():
+                    show_all = gr.CheckboxGroup(
+                        ["Select All Models"],
+                        label="Show plot for all models 🤖",
+                        value=[],
+                        elem_id="value-select-3",
+                        interactive=True,
+                    )
+                
+                with gr.Column():
+                    show_names = gr.CheckboxGroup(
+                        ["Show Names"],
+                        label ="Show names of models on the plot 🏷️",
+                        value=[],
+                        elem_id="value-select-4",
+                        interactive=True,
+                    ) 
+
+            with gr.Row():
+                dummy_plot_df = gr.DataFrame(
                     value=plot_df,
                     visible=False
                 )
-            with gr.Row():
-                # Output block for the plot
-                plot_output = gr.Plot()
 
-            model_cols.change(
+            with gr.Row():
+                with gr.Column():
+                    # Output block for the plot
+                    plot_output = gr.Plot()
+
+            open_models_selection.change(
                 compare_plots,
-                [plot_grdf, model_cols],
+                [dummy_plot_df, open_models_selection, closed_models_selection, show_all, show_names],
+                plot_output,
+                queue=True
+            )
+
+            closed_models_selection.change(
+                compare_plots,
+                [dummy_plot_df, open_models_selection, closed_models_selection, show_all, show_names],
+                plot_output,
+                queue=True
+            )
+            
+            show_all.change(
+                compare_plots,
+                [dummy_plot_df, open_models_selection, closed_models_selection, show_all, show_names],
+                plot_output,
+                queue=True
+            )
+
+            show_names.change(
+                compare_plots,
+                [dummy_plot_df, open_models_selection, closed_models_selection, show_all, show_names],
                 plot_output,
                 queue=True
             )
 
         with gr.TabItem("🔄 Versions and Details", elem_id="details", id=2):
             with gr.Row():
-                ver_selection = gr.Dropdown(
-                    previous_vname, label="Select Version 🕹️", value=previous_vname[0]
+                version_select = gr.Dropdown(
+                    version_names, label="Select Version 🕹️", value=version_names[0]
                 )
             with gr.Row():
                 search_bar_prev = gr.Textbox(
@@ -116,13 +170,14 @@ with demo:
                 queue=True
             )
 
-            ver_selection.change(
+            version_select.change(
                 select_prev_df,
-                [ver_selection],
+                [version_select],
                 prev_table,
                 queue=True
             )
+    main_app.load()
 
-    demo.load()
-demo.queue()
-demo.launch()
+main_app.queue()
+
+main_app.launch()
