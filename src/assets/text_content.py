@@ -1,4 +1,4 @@
-TITLE = """<h1 align="center" id="space-title"> 🏆 CLEM Leaderboard</h1>"""
+TITLE = """<h1 align="center" id="space-title"> 🏆 Multimodal CLEM Leaderboard</h1>"""
 
 REPO = "https://raw.githubusercontent.com/clembench/clembench-runs/main/"
 HF_REPO = "colab-potsdam/clem-leaderboard"
@@ -11,9 +11,9 @@ INTRODUCTION_TEXT = """
 
 The CLEM Leaderboard aims to track, rank and evaluate current cLLMs (chat-optimized Large Language Models) with the suggested pronounciation “clems”. 
 
-The benchmarking approach is described in [Clembench: Using Game Play to Evaluate Chat-Optimized Language Models as Conversational Agents](https://aclanthology.org/2023.emnlp-main.689.pdf).
-
 The multimodal benchmark is described in [Two Giraffes in a Dirt Field: Using Game Play to Investigate Situation Modelling in Large Multimodal Models](https://arxiv.org/abs/2406.14035)
+
+The original benchmarking approach for text-only models is described in [Clembench: Using Game Play to Evaluate Chat-Optimized Language Models as Conversational Agents](https://aclanthology.org/2023.emnlp-main.689.pdf).
 
 Source code for benchmarking "clems" is available here: [Clembench](https://github.com/clembench/clembench)
 
