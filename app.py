@@ -67,45 +67,7 @@ with hf_app:
     gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
     with gr.Tabs(elem_classes="tab-buttons") as tabs:
-        """
-        #######################        FIRST TAB - TEXT-LEADERBOARD       #######################
-        """
-        with gr.TabItem(TEXT_NAME, elem_id="llm-benchmark-tab-table", id=0):
-            with gr.Row():
-                search_bar = gr.Textbox(
-                    placeholder=" 🔍 Search for models - separate multiple queries with `;` and press ENTER...",
-                    show_label=False,
-                    elem_id="search-bar",
-                )
 
-            leaderboard_table = gr.Dataframe(
-                value=text_leaderboard,
-                elem_id="text-leaderboard-table",
-                interactive=False,
-                visible=True,
-                height=dataframe_height
-            )
-
-            # Show information about the clemscore and last updated date below the table
-            gr.HTML(CLEMSCORE_TEXT)
-            gr.HTML(f"Last updated - {github_data['date']}")
-
-            # Add a dummy leaderboard to handle search queries in leaderboard_table
-            # This will show a temporary leaderboard based on the searched value
-            dummy_leaderboard_table = gr.Dataframe(
-                value=text_leaderboard,
-                elem_id="text-leaderboard-table-dummy",
-                interactive=False,
-                visible=False
-            )
-
-            # Action after submitting a query to the search bar
-            search_bar.submit(
-                query_search,
-                [dummy_leaderboard_table, search_bar],
-                leaderboard_table,
-                queue=True
-            )
 
         """
         #######################       SECOND TAB - MULTIMODAL LEADERBOARD     #######################
