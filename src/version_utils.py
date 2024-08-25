@@ -32,17 +32,31 @@ def get_versions_data():
     versions = json_data['versions']
 
     # Sort version names - latest first
-    version_names = sorted(
-        [ver['version'] for ver in versions],
-        key=lambda v: float(v[1:]),
-        reverse=True
-    )
+    # Convert to a list of ints to compare ambiguities | example - 1.6.5 with 1.6
+    int_version_names = []
+    for ver in versions:
+        version_str = ver['version']
+        ver_splits = version_str[1:].split('.')
+        ver_splits = [int(v_split) for v_split in ver_splits]
+        if ver_splits[0] >= 1 and ver_splits[1] >= 5:
+            int_version_names.append(ver_splits)
+    sorted_version_names = sorted(int_version_names, reverse=True)
+
+    version_names = []
+    for v in sorted_version_names:
+        version_str = "v"
+        for i in v:
+            version_str += str(i) + "."
+        version_str = version_str[:-1]
+        version_str += "_multimodal"
+        version_names.append(version_str)
+
     print(f"Found {len(version_names)} versions from get_versions_data(): {version_names}.")
 
     # Get Last updated date of the latest version
     latest_version = version_names[0]
     latest_date = next(
-        ver['date'] for ver in versions if ver['version'] == latest_version
+        ver['date'] for ver in versions if ver['version'] == latest_version.split("_")[0]
     )
     formatted_date = datetime.strptime(latest_date, "%Y/%m/%d").strftime("%d %b %Y")
 
@@ -53,39 +67,20 @@ def get_versions_data():
     dfs = []
 
     for version in version_names:
-        text_url = f"{base_repo}{version}/results.csv"
-        mm_url = f"{base_repo}{version}_multimodal/results.csv"
-        quant_url = f"{base_repo}{version}_quantized/results.csv"
-
-        # Text Data
-        response = requests.get(text_url)
-        if response.status_code == 200:
-            df = pd.read_csv(StringIO(response.text))
-            df = process_df(df)
-            df = df.sort_values(by=df.columns[1], ascending=False)  # Sort by clemscore column
-            versions_data[version] = df
-        else:
-            print(f"Failed to read Text-only leaderboard CSV file for version: {version}. Status Code: {response.status_code}")
-
+        mm_url = f"{base_repo}{version}/results.csv"
+        print(mm_url)
         # Multimodal Data
         mm_response = requests.get(mm_url)
         if mm_response.status_code == 200:
             mm_df = pd.read_csv(StringIO(mm_response.text))
             mm_df = process_df(mm_df)
             mm_df = mm_df.sort_values(by=mm_df.columns[1], ascending=False)  # Sort by clemscore column
-            versions_data[version+"_multimodal"] = mm_df
+            versions_data[version] = mm_df
         else:
             print(f"Failed to read multimodal leaderboard CSV file for version: {version}: Status Code: {mm_response.status_code}. Please ignore this message if multimodal results are not available for this version")
 
-        # Multimodal Data
-        q_response = requests.get(quant_url)
-        if q_response.status_code == 200:
-            q_df = pd.read_csv(StringIO(q_response.text))
-            q_df = process_df(q_df)
-            q_df = q_df.sort_values(by=q_df.columns[1], ascending=False)  # Sort by clemscore column
-            versions_data[version + "_quantized"] = q_df
-        else:
-            print(f"Failed to read quantized leaderboard CSV file for version: {version}: Status Code: {mm_response.status_code}. Please ignore this message if quantized results are not available for this version")
+    print("INSIDEEE VEr Data")
+    print(versions_data)
 
     return versions_data
 
