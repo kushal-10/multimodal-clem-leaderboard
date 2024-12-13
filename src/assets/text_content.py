@@ -1,6 +1,6 @@
 TITLE = """<h1 align="center" id="space-title"> 🏆 Multimodal CLEM Leaderboard</h1>"""
 
-REPO = "https://raw.githubusercontent.com/kushal-10/clembench-runs/main/"
+REPO = "https://raw.githubusercontent.com/clembench/clembench-runs/main/"
 HF_REPO = "colab-potsdam/multimodal-clem-leaderboard"
 REGISTRY_URL = "https://raw.githubusercontent.com/clp-research/clembench/refs/heads/main/backends/model_registry.json"
 BENCHMARK_FILE = "benchmark_runs.json"
