@@ -4,7 +4,7 @@ import requests
 import json
 import gradio as gr
 
-from src.assets.text_content import SHORT_NAMES, TEXT_NAME, MULTIMODAL_NAME
+from src.assets.text_content import SHORT_NAMES, TEXT_NAME, MULTIMODAL_NAME, REGISTRY_URL
 from src.leaderboard_utils import get_github_data
 
 
@@ -131,8 +131,7 @@ def split_models(model_list: list):
     commercial_models = []
     
     # Load model registry data from main repo
-    model_registry_url = "https://raw.githubusercontent.com/clp-research/clembench/main/backends/model_registry.json"
-    response = requests.get(model_registry_url)
+    response = requests.get(REGISTRY_URL)
 
     if response.status_code == 200:
         json_data = json.loads(response.text)
@@ -163,7 +162,7 @@ def split_models(model_list: list):
 """
 Update Functions, for when the leaderboard selection changes
 """
-def update_open_models(leaderboard: str = TEXT_NAME):
+def update_open_models():
     """
     Change the checkbox group of Open Models based on the leaderboard selected
 
@@ -173,9 +172,9 @@ def update_open_models(leaderboard: str = TEXT_NAME):
         Updated checkbox group for Open Models, based on the leaderboard selected
     """
     github_data = get_github_data()
-    leaderboard_data = github_data["multimodal"][0]
+    leaderboard_data = github_data["multimodal"]['dataframes'][0]
     models = leaderboard_data.iloc[:, 0].unique().tolist()
-    open_models, commercial_models = split_models(models)
+    open_models, _ = split_models(models)
     return gr.CheckboxGroup(
         open_models,
         value=[],
@@ -183,7 +182,7 @@ def update_open_models(leaderboard: str = TEXT_NAME):
         interactive=True,
     )
 
-def update_closed_models(leaderboard: str = TEXT_NAME):
+def update_closed_models():
     """
     Change the checkbox group of Closed Models based on the leaderboard selected
 
@@ -193,9 +192,9 @@ def update_closed_models(leaderboard: str = TEXT_NAME):
         Updated checkbox group for Closed Models, based on the leaderboard selected
     """
     github_data = get_github_data()
-    leaderboard_data = github_data["multimodal"][0]
+    leaderboard_data = github_data["multimodal"]['dataframes'][0]
     models = leaderboard_data.iloc[:, 0].unique().tolist()
-    open_models, commercial_models = split_models(models)
+    _, commercial_models = split_models(models)
     return gr.CheckboxGroup(
         commercial_models,
         value=[],
@@ -203,7 +202,7 @@ def update_closed_models(leaderboard: str = TEXT_NAME):
         interactive=True,
     )
 
-def get_plot_df(leaderboard: str = TEXT_NAME) -> pd.DataFrame:
+def get_plot_df() -> pd.DataFrame:
     """
     Get the DataFrame for plotting based on the selected leaderboard.
     Args:
@@ -212,7 +211,7 @@ def get_plot_df(leaderboard: str = TEXT_NAME) -> pd.DataFrame:
         DataFrame with model data.
     """
     github_data = get_github_data()
-    return github_data["multimodal"][0]
+    return github_data["multimodal"]['dataframes'][0]
 
 
 """

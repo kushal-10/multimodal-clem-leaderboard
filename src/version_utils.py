@@ -1,7 +1,3 @@
-## REQUIRED OUTPUT ###
-# A list of version names -> v1.6, v.6_multimodal, v1.6_quantized, v1.5, v0.9, etc......
-# A corresponding DataFrame?
-
 import requests
 from datetime import datetime
 import pandas as pd
@@ -9,18 +5,18 @@ import json
 from io import StringIO
 
 from src.leaderboard_utils import process_df
-from src.assets.text_content import REPO
+from src.assets.text_content import REPO, BENCHMARK_FILE
 
-def get_versions_data():
+def get_version_data():
     """
-    Read and process data from CSV files of all available versions hosted on GitHub. - https://github.com/clembench/clembench-runs
+    Read and process data from CSV files of all available multimodal versions hosted on GitHub. - https://github.com/clembench/clembench-runs
 
     Returns:
-        versions_data:
+        version_data:
             -
     """
     base_repo = REPO
-    json_url = base_repo + "benchmark_runs.json"
+    json_url = base_repo + BENCHMARK_FILE
     response = requests.get(json_url)
 
     # Check if the JSON file request was successful
@@ -33,42 +29,35 @@ def get_versions_data():
 
     version_names = sorted(
         [ver['version'] for ver in versions],
-        key=lambda v: list(map(int, v[1:].split('_')[0].split('.'))),  # {{ edit_1 }}: Corrected slicing to handle 'v' prefix
+        key=lambda v: list(map(int, v[1:].split('_')[0].split('.'))),  
         reverse=True
     )   
 
-    # Get Last updated date of the latest version
-    latest_version = version_names[0]
-    latest_date = next(
-        ver['date'] for ver in versions if ver['version'] == latest_version
-    )
-    formatted_date = datetime.strptime(latest_date, "%Y-%m-%d").strftime("%d %b %Y")  # {{ edit_1 }}: Updated date format
-
-    # Get Versions data
-    versions_data = {"latest": latest_version, "date": formatted_date}
-
+    version_data  = {
+        'versions': [],
+        'dataframes': []
+    }
 
     for version in version_names:
-        if version.endswith("multimodal"):
-            version_suffix = ""
-        else:
-            version_suffix = "_multimodal"
+        if 'multimodal' in version: # Only include multimodal versions
+            base_url = f"{base_repo}{version}/results.csv"
+            response = requests.get(base_url)
+            if response.status_code == 200:
+                df = pd.read_csv(StringIO(response.text))
+                df = process_df(df)
+                df = df.sort_values(by=df.columns[1], ascending=False)  # Sort by clemscore column
+                version_data['dataframes'].append(df)
+                metadata = {
+                    'name': version,
+                    'last_updated': [datetime.strptime(v['last_updated'], '%Y-%m-%d').strftime("%d %b %Y") for v in versions if v['version'] == version],
+                    'release_date': [datetime.strptime(v['release_date'], '%Y-%m-%d').strftime("%d %b %Y") for v in versions if v['version'] == version]
+                } 
+                version_data['versions'].append(metadata)
 
-        mm_url = f"{base_repo}{version}{version_suffix}/results.csv"
 
-        # Multimodal Data
-        mm_response = requests.get(mm_url)
-        if mm_response.status_code == 200:
-            mm_df = pd.read_csv(StringIO(mm_response.text))
-            mm_df = process_df(mm_df)
-            mm_df = mm_df.sort_values(by=mm_df.columns[1], ascending=False)  # Sort by clemscore column
-            versions_data[version+version_suffix] = mm_df
-        else:
-            print(f"Failed to read multimodal leaderboard CSV file for version: {version}: Status Code: {mm_response.status_code}. Please ignore this message if multimodal results are not available for this version")
-
-    return versions_data
+    return version_data
 
 
 if __name__ == "__main__":
-    versions_data = get_versions_data()
-    print(versions_data.keys())
+    version_data = get_version_data()
+    print(version_data['versions'])
