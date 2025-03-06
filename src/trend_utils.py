@@ -239,7 +239,7 @@ def get_plot(df: pd.DataFrame, start_date: str = '2023-06-01', end_date: str = '
 
     # Add an identifier column to each DataFrame
     df['Model Type & Benchmark Version'] = df.apply(
-        lambda row: f"Open-Weight {row['version'].replace("_multimodal", "")}" if row['open_weight'] else f"Commercial {row['version'].replace("_multimodal", "")}",
+        lambda row: f"Open-Weight {row['version'].replace('_multimodal', '')}" if row['open_weight'] else f"Commercial {row['version'].replace('_multimodal', '')}",
         axis=1
     )
 
