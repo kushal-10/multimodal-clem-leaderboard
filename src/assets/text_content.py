@@ -2,7 +2,7 @@ TITLE = """<h1 align="center" id="space-title"> 🏆 Multimodal CLEM Leaderboard
 
 REPO = "https://raw.githubusercontent.com/clembench/clembench-runs/main/"
 HF_REPO = "colab-potsdam/multimodal-clem-leaderboard"
-REGISTRY_URL = "https://raw.githubusercontent.com/clp-research/clembench/refs/heads/main/backends/model_registry.json"
+REGISTRY_URL = "https://raw.githubusercontent.com/clp-research/clemcore/refs/heads/main/clemcore/backends/model_registry.json"
 BENCHMARK_FILE = "benchmark_runs.json"
 
 TEXT_NAME = "🥇 CLEM Leaderboard"
